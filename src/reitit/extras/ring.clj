@@ -5,9 +5,16 @@
 
 ;; Credits @ouvanous
 ;; https://github.com/metosin/reitit/issues/287#issuecomment-535453675
-(defn servlet-middleware [handler]
+(defn strip-servlet-context-path [handler]
   (fn [request]
     (handler (update request :uri #(str/replace-first % (:servlet-context-path request "") "")))))
+
+;; It would be nice if `ring.adapter.jetty/run-jetty` had such option.
+;; For now this ugly hack available.
+(defn set-servlet-context-path [value]
+  (fn [handler]
+    (fn [request]
+      (handler (assoc request :servlet-context-path value)))))
 
 ;; `reitit.ring/redirect-trailing-slash-handler` with servlet context support
 (defn redirect-trailing-slash-handler
